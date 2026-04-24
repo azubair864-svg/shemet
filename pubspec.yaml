@@ -1,0 +1,135 @@
+name: dating_live_app
+description: "Shemet - Live Streaming & Dating"
+publish_to: 'none'
+
+version: 1.0.1+9
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Firebase
+  firebase_core: ^3.10.1
+  firebase_auth: ^5.4.4
+  cloud_firestore: ^5.6.2
+  firebase_storage: ^12.4.2
+  firebase_messaging: ^15.2.4
+  cloud_functions: ^5.2.4
+  firebase_app_check: ^0.3.0+1
+
+  # STATE MANAGEMENT
+  provider: ^6.1.1
+
+  # AUTHENTICATION
+  google_sign_in: ^6.2.1
+
+  # LOCATION
+  geolocator: ^10.1.0
+
+  # IMAGE
+  image_picker: ^1.0.7
+  flutter_image_compress: ^2.1.0
+  image_cropper: ^8.0.2
+  camera: ^0.11.0+1
+  google_mlkit_face_detection: ^0.11.0
+
+  # UI
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.9
+  shimmer: ^3.0.0
+
+  # NETWORK
+  http: ^1.2.0
+
+  # VIDEO
+  video_player: ^2.8.2
+
+  # UTILS
+  shared_preferences: ^2.2.2
+  intl: ^0.19.0
+
+  # ENCRYPTION
+  crypto: ^3.0.3
+  encrypt: ^5.0.3
+
+  # ⭐ AUDIO RECORDING & PLAYBACK - UPDATED
+
+  just_audio: ^0.9.36
+  path_provider: ^2.1.1
+  flutter_sound: ^9.2.13
+
+  # VIDEO CALLS
+  agora_rtc_engine: ^6.3.0
+  deepar_flutter_plus: ^0.2.0 # Modern version with namespace support
+  audio_waveforms: ^1.0.4
+
+  # ANIMATIONS
+  lottie: ^3.0.0
+  sensors_plus: ^6.1.0 # For Gyro Parallax
+  vector_math: ^2.1.4 # For 3D Calculations
+
+  # AUDIO PLAYER
+  audioplayers: ^5.2.1
+
+  # SHARE
+  share_plus: ^7.2.1
+
+  # PERMISSIONS
+  permission_handler: ^11.0.1
+
+  # PAYMENTS - Google Play Billing
+  in_app_purchase: ^3.2.0
+
+  # URL Launcher
+  url_launcher: ^6.1.14
+  printing: ^5.14.2
+  pdf: ^3.11.1
+  firebase_database: ^11.3.10
+
+  flutter_windowmanager_plus: ^1.0.1 # Maintained successor to fix namespace issues
+  country_picker: ^2.0.27
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FF1493"
+  adaptive_icon_foreground: "assets/images/logo.png"
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/videos/race_bg_loop.mp4
+    - assets/videos/car_race.mp4
+    - assets/images/
+    - assets/images/gifts/
+    - assets/images/vehical_images/
+    - assets/images/games/
+    - assets/images/track_images/
+    - assets/animations/
+    - assets/audio/
+    - assets/effects/
+    - assets/images/gamming_bg_1.png
+    - assets/images/gamming_bg_2.png
+    - assets/images/music_bg_1.png
+    - assets/images/music_bg_2.png
+    - assets/images/romantic_bg_1.png
+    - assets/images/romantic_bg_2.png
+    - assets/images/pk_bg_1.png
+    - assets/images/pk_bg_2.png
+    - assets/images/chat_bg_1.png
+    - assets/images/chat_bg_2.png

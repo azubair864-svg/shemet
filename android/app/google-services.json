@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "351905956852",
+    "project_id": "dating-live-app-477af",
+    "storage_bucket": "dating-live-app-477af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351905956852:android:d47fcd4bc1f9efab5a2fa1",
+        "android_client_info": {
+          "package_name": "com.datinglive.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "351905956852-vaqrgg6qdbjlge2r9b9v12nofltebkvu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.datinglive.app",
+            "certificate_hash": "3b7f7aa704508920478303aa41c7709ad1c14ef7"
+          }
+        },
+        {
+          "client_id": "351905956852-saocmqn5m29omosp5urmhv5r7mvaqg6i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzXH0KH0UzjOt2AERgaX4SVNS6OGWygCY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "351905956852-saocmqn5m29omosp5urmhv5r7mvaqg6i.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "351905956852-01a02cvbsevbgkudc9pg52j7mdph490o.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.datinglive.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,59 @@
+name: Android Release Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main", "release/**"]
+
+jobs:
+  quality-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Static analysis
+        run: flutter analyze
+
+      - name: Unit/widget tests
+        run: flutter test
+
+      - name: Decode release keystore
+        run: |
+          echo "${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+
+      - name: Create key.properties
+        run: |
+          cat > android/key.properties <<KEYPROPS
+          storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=app/upload-keystore.jks
+          KEYPROPS
+
+      - name: Build release AAB
+        run: >-
+          flutter build appbundle --release
+          --dart-define=AGORA_APP_ID=${{ secrets.AGORA_APP_ID }}
+          --dart-define=DEEPAR_ANDROID_KEY=${{ secrets.DEEPAR_ANDROID_KEY }}
+          --dart-define=DEEPAR_IOS_KEY=${{ secrets.DEEPAR_IOS_KEY }}
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: build/app/outputs/bundle/release/*.aab

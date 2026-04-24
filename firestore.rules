@@ -1,0 +1,268 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // HELPER FUNCTIONS (CORE SECURITY)
+    // ==========================================
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function getAgentData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAgent() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getAgentData().isAgent == true;
+    }
+
+    // ==========================================
+    // USER PROFILES & SOCIAL
+    // ==========================================
+    
+    match /users/{userId} {
+      allow read, get, list: if true; 
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || (isOwner(userId) && 
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['id', 'agencyId']) || resource.data.id == null) && 
+        (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'name', 'nickname', 'bio', 'photos', 'photoURL', 'gender', 'isHost', 'updatedAt', 'isOnline', 'lastSeen', 
+          'lastDeviceId', 'currentRoomId', 'currentPartyRoomId', 'lastActiveAt', 'uid', 'email', 'phoneNumber',
+          'profileComplete', 'country', 'isVerified', 'diamonds', 'points', 'createdAt', 'role'
+        ])));
+      allow delete: if isAdmin();
+
+      allow list: if isSignedIn() && (isAdmin() || (isAgent() && request.query.limit <= 100));
+
+      match /following/{followId} {
+        allow read: if true;
+        allow write: if isOwner(userId) || isAdmin();
+      }
+      match /followers/{followerId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+      }
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isSignedIn(); 
+      }
+      match /blocked/{blockedId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+      match /conversations/{convoId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // ==========================================
+    // LIVE STREAMING SYSTEM
+    // ==========================================
+    
+    match /live_streams/{streamId} {
+      allow read: if true; 
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if (isSignedIn() && resource.data.hostId == request.auth.uid) || isAdmin();
+
+      match /chat/{msgId} { allow read: if true; allow create: if isSignedIn(); }
+      match /messages/{messageId} { allow read: if true; allow create: if isSignedIn(); }
+    }
+
+    match /viewers/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /activities/{activityId} {
+      allow read, create: if isSignedIn();
+    }
+
+    match /stream_statistics/{streamId} {
+      allow read: if isSignedIn() && (request.auth.uid == resource.data.hostId || isAdmin());
+      allow create: if isSignedIn();
+    }
+
+    // ==========================================
+    // PARTY ROOMS (VOICE & SOCIAL)
+    // ==========================================
+    
+    match /party_rooms/{roomId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if (isSignedIn() && resource.data.hostId == request.auth.uid) || isAdmin();
+
+      match /entrances/{entranceId} { allow read, write: if isSignedIn(); }
+
+      match /mic_invitations/{userId} { allow read, write: if isSignedIn(); }
+      match /messages/{messageId} { allow read, write: if isSignedIn(); }
+      match /seat_requests/{requestId} { allow read, write: if isSignedIn(); }
+      match /mic_status/{userId} { allow read, write: if isSignedIn(); }
+      match /visitors/{userId} { allow read, write: if isSignedIn(); }
+      match /blocked_users/{userId} { allow read, write: if isSignedIn(); }
+      match /events/{eventId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+      match /top_contributors/{userId} { allow read: if isSignedIn(); allow write: if false; }
+    }
+
+    // ==========================================
+    // TRANSACTIONS & ECONOMY
+    // ==========================================
+    
+    match /gift_transactions/{txId} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == resource.data.userId || 
+        request.auth.uid == resource.data.senderId || 
+        request.auth.uid == resource.data.receiverId || 
+        (isAgent() && getAgentData().agencyId == resource.data.agencyId) ||
+        isAdmin()
+      );
+      allow create: if isSignedIn();
+    }
+
+    match /daily_agency_performance/{id} {
+      allow read: if isSignedIn() && (
+        (isAgent() && getAgentData().agencyId == resource.data.agencyId) ||
+        isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+
+    match /premium_transactions/{txId} {
+      allow read: if isSignedIn() && (resource.data.viewerId == request.auth.uid || resource.data.hostId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+    }
+
+    match /wallet_transactions/{txId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+    }
+
+    match /coin_transactions/{txId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAdmin();
+    }
+    
+    match /withdraw_requests/{requestId} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+
+    match /topup_requests/{reqId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    match /withdrawals/{wId} { allow read, write: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin()); }
+    match /host_withdrawals/{wId} { allow read: if isAdmin(); }
+    
+    match /iap_purchases/{purchaseId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /diamond_purchase_requests/{requestId} {
+      allow read: if isSignedIn() && (resource.data.agentUid == request.auth.uid || isAdmin());
+      allow create: if isAgent();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /diamond_dealers/{dealerId} {
+      allow read: if true; 
+      allow create: if isSignedIn();
+      allow update: if isOwner(dealerId) || isAdmin();
+    }
+
+    match /dealer_transactions/{txId} {
+      allow read: if isSignedIn() && (resource.data.dealerId == request.auth.uid || resource.data.targetUserId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+    }
+
+    // ==========================================
+    // CHAT & COMMUNICATION
+    // ==========================================
+    
+    match /chats/{chatId} {
+      allow read, update: if isSignedIn() && (
+        request.auth.uid in resource.data.participants ||
+        chatId.matches('.*' + request.auth.uid + '.*')
+      );
+      allow create: if isSignedIn();
+      
+      match /messages/{messageId} {
+        allow read, write: if isSignedIn() && (
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants ||
+          chatId.matches('.*' + request.auth.uid + '.*')
+        );
+      }
+    }
+
+    match /calls/{callId} {
+      allow create: if isSignedIn();
+      allow read, update: if isSignedIn() && (
+         resource == null || 
+         resource.data.callerId == request.auth.uid ||
+         resource.data.receiverId == request.auth.uid ||
+         (isAgent() && getAgentData().agencyId == resource.data.agencyId) ||
+         callId.matches('.*' + request.auth.uid + '.*')
+      );
+    }
+
+    match /video_calls/{callId} {
+      allow read, write: if isSignedIn();
+      match /messages/{messageId} { allow read, write: if isSignedIn(); }
+    }
+
+    // ==========================================
+    // GAMES & MATCHING
+    // ==========================================
+    
+    match /matches/{matchId} {
+      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow create: if isSignedIn();
+    }
+
+    match /random_call_queue/{docId} { allow read, write: if isSignedIn(); }
+    match /passes/{docId} { allow read, write: if isSignedIn(); }
+
+    // ==========================================
+    // CONTENT & SYSTEM
+    // ==========================================
+
+    match /gifts/{giftId} { allow read: if true; allow write: if isAdmin(); }
+    match /diamond_packages/{pkgId} { allow read: if true; allow write: if isAdmin(); }
+    match /greetings/{greetingId} {
+      allow read: if true;
+      allow write: if isSignedIn() && (request.resource.data.userId == request.auth.uid || resource.data.userId == request.auth.uid);
+    }
+    match /reports/{reportId} { allow create: if isSignedIn(); allow read: if isAdmin(); }
+    
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() || (isSignedIn() && (docId == 'counters' || docId == 'ID_COUNTER'));
+    }
+
+    match /manual_adjustments/{adjId} { allow read, write: if isAdmin(); }
+
+    // Default allow for authenticated users (Temporary for debugging)
+    match /{document=**} {
+      allow read, write: if isSignedIn();
+    }
+  }
+}

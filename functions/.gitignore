@@ -1,0 +1,21 @@
+# Compiled JavaScript files
+**/*.js
+**/*.js.map
+
+# Except the index.js
+!index.js
+
+# TypeScript v1 compiler output
+.rpt2_cache/
+
+# Node.js dependency directory
+node_modules/
+
+# Firebase cache
+.firebase/
+
+# Firebase config
+.firebaserc
+
+# Logs
+*.log

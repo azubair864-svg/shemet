@@ -1,0 +1,27 @@
+Analyzing agora_service.dart...                                 
+
+   info • The constant name 'APP_ID' isn't a lowerCamelCase identifier • lib/services/agora_service.dart:19:23 • constant_identifier_names
+   info • The constant name 'DEEPAR_ANDROID_KEY' isn't a lowerCamelCase identifier • lib/services/agora_service.dart:22:23 • constant_identifier_names
+   info • The constant name 'DEEPAR_IOS_KEY' isn't a lowerCamelCase identifier • lib/services/agora_service.dart:23:23 • constant_identifier_names
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:50:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:79:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:81:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:126:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:129:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:142:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:144:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:155:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:157:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:180:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:190:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:206:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:258:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:262:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:266:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:277:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:311:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:338:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:349:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/agora_service.dart:351:7 • avoid_print
+
+23 issues found. (ran in 5.0s)

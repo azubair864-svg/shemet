@@ -1,0 +1,14 @@
+node_modules/
+.env
+.firebase/
+build/
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+ios/Pods/
+android/.gradle/
+*.log
+*.apk
+*.aab
+*.zip
