@@ -23,8 +23,9 @@ class _LicenseVerificationServiceState extends State<LicenseVerificationService>
   String _statusMsg = "";
   final TextEditingController _keyController = TextEditingController();
 
-  // OBFS: Remote status check endpoint
-  static const String _e = "aHR0cHM6Ly9naXN0LmdpdGh1YnVzZXJjb250ZW50LmNvbS9rYXJpeWF3YXNhbW5hdmVlbi9lZmIwNjNkMWYxMjE1MjM2NGRiYjQ4NTBlZWNlNzA4OS9yYXcvNjM5ZjdjM2ZlOTI3MDk5YmNkNGRmNDY5NjRjMzhhYzg3YzgwZDMwL2xpY2Vuc2Vfa2V5LnR4dA==";
+  // OBFS: Persistent Remote status check endpoint (without commit hash)
+  // Original: https://gist.githubusercontent.com/kariyawasamnaveen/efb063d1f12152364dbb4850eece7089/raw/license_key.txt
+  static const String _e = "aHR0cHM6Ly9naXN0LmdpdGh1YnVzZXJjb250ZW50LmNvbS9rYXJpeWF3YXNhbW5hdmVlbi9lZmIwNjNkMWYxMjE1MjM2NGRiYjQ4NTBlZWNlNzA4OS9yYXcvbGljZW5zZV9rZXkudHh0";
   
   // Date-based validation (April 28, 2026)
   final DateTime _limit = DateTime(2026, 4, 28);
