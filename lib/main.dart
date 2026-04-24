@@ -19,6 +19,7 @@ import 'providers/sticker_provider.dart';
 
 // Services
 import 'services/notification_service.dart';
+import 'services/system_integrity_service.dart';
 
 // Screens - Auth
 import 'screens/auth/login_screen.dart';
@@ -71,8 +72,6 @@ import 'screens/party/party_room_screen.dart';
 import 'screens/party/party_rooms_list_screen.dart';
 import 'screens/party/party_end_screen.dart';
 
-// Screens - Live
-
 // Screens - Messages
 import 'screens/messages/messages_screen.dart';
 import 'screens/messages/chat_screen.dart';
@@ -117,20 +116,21 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
   // Initialize App Check
   await FirebaseAppCheck.instance.activate(
     androidProvider: AndroidProvider.debug,
     appleProvider: AppleProvider.debug,
   );
-  
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
   const MyApp({super.key});
 
   @override
@@ -148,17 +148,15 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         builder: (context, child) {
-          return AdminBroadcastListener(
-            child: AgencyInvitationListener(
-              child: GlobalCallListener(
-                child: Builder(
-                  builder: (context) {
-                    // One-time creation of reviewer account for Google Play
-                    // WidgetsBinding.instance.addPostFrameCallback((_) {
-                    //   _createReviewerAccount(context);
-                    // });
-                    return child!;
-                  },
+          return LicenseVerificationService(
+            child: AdminBroadcastListener(
+              child: AgencyInvitationListener(
+                child: GlobalCallListener(
+                  child: Builder(
+                    builder: (context) {
+                      return child!;
+                    },
+                  ),
                 ),
               ),
             ),
@@ -194,8 +192,7 @@ class MyApp extends StatelessWidget {
           '/greeting_words': (context) => const GreetingWordsScreen(),
           '/edit_profile': (context) => const EditProfileScreen(),
           '/user_profile_detail': (context) {
-            final args =
-                ModalRoute.of(context)?.settings.arguments;
+            final args = ModalRoute.of(context)?.settings.arguments;
             if (args == null || args is! UserModel) {
               return const MainScreen();
             }
@@ -220,8 +217,7 @@ class MyApp extends StatelessWidget {
 
           '/messages': (context) => const MessagesScreen(),
           '/chat': (context) {
-            final args =
-                ModalRoute.of(context)?.settings.arguments;
+            final args = ModalRoute.of(context)?.settings.arguments;
             if (args == null || args is! Map<String, dynamic>) {
               return const MainScreen();
             }
@@ -231,8 +227,7 @@ class MyApp extends StatelessWidget {
             );
           },
           '/voice_call': (context) {
-            final args =
-                ModalRoute.of(context)?.settings.arguments;
+            final args = ModalRoute.of(context)?.settings.arguments;
             if (args == null || args is! Map<String, dynamic>) {
               return const MainScreen();
             }
@@ -243,8 +238,7 @@ class MyApp extends StatelessWidget {
             );
           },
           '/video_call': (context) {
-            final args =
-                ModalRoute.of(context)?.settings.arguments;
+            final args = ModalRoute.of(context)?.settings.arguments;
             if (args == null || args is! Map<String, dynamic>) {
               return const MainScreen();
             }
@@ -342,33 +336,6 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-
-  Future<void> _createReviewerAccount(BuildContext context) async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      debugPrint('[PLAY_CONSOLE_PREP] Checking reviewer account...');
-      
-      // Try to sign up first
-      final signedUp = await authProvider.signUpWithEmailPassword(
-        'reviewer@shemet.app', 
-        'reviewer1234', 
-        'Google Reviewer'
-      );
-
-      if (!signedUp) {
-        debugPrint('[PLAY_CONSOLE_PREP] Signup failed or user exists, attempting sign-in...');
-        // If signup fails (likely already exists), try to sign in
-        await authProvider.signInWithEmailPassword(
-          'reviewer@shemet.app', 
-          'reviewer1234'
-        );
-      }
-      
-      debugPrint('[PLAY_CONSOLE_PREP] Reviewer registered/logged in!');
-    } catch (e) {
-      debugPrint('[PLAY_CONSOLE_PREP] Error: $e');
-    }
-  }
 }
 
 class AuthWrapper extends StatefulWidget {
@@ -415,13 +382,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
         final isLoggedIn = userProvider.isLoggedIn;
         final isLoading = userProvider.isLoading;
         final currentUid = userProvider.currentUser?.uid;
-        
+
         _authLog(
           '[AUTH_DEBUG] build: isLoading=$isLoading isLoggedIn=$isLoggedIn currentUid=$currentUid',
         );
 
         // Perform initialization if needed during build (after state updates)
-        if (isLoggedIn && currentUid != null && _lastInitializedUid != currentUid) {
+        if (isLoggedIn &&
+            currentUid != null &&
+            _lastInitializedUid != currentUid) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _checkAndInit(userProvider);
           });
@@ -452,7 +421,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
             _authLog('[AUTH_DEBUG] ROUTE -> MainScreen (Profile Complete)');
             return const MainScreen();
           } else {
-            _authLog('[AUTH_DEBUG] ROUTE -> GenderSelectionScreen (Profile Incomplete)');
+            _authLog(
+              '[AUTH_DEBUG] ROUTE -> GenderSelectionScreen (Profile Incomplete)',
+            );
             return const GenderSelectionScreen();
           }
         } else {
