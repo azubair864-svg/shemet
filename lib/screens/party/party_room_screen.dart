@@ -71,7 +71,7 @@ class _PartyRoomScreenState extends State<PartyRoomScreen>
   bool _hasJoined = false;
   bool _isLoading = true;
   bool _showSimpleView = false;
-  bool _showDiamondRain = false;
+  final bool _showDiamondRain = false;
   bool _showChatInput = false;
   List<Map<String, dynamic>> _topContributors = [];
 

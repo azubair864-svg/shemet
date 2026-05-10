@@ -2,7 +2,7 @@ name: dating_live_app
 description: "Shemet - Live Streaming & Dating"
 publish_to: 'none'
 
-version: 1.0.1+9
+version: 1.0.1+10
 
 environment:
   sdk: '>=3.9.0 <4.0.0'

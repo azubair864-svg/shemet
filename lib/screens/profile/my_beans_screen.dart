@@ -3,7 +3,6 @@ import 'package:flutter_windowmanager_plus/flutter_windowmanager_plus.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../wallet/withdraw_screen.dart';
-import '../../core/constants/app_colors.dart';
 import 'dart:ui';
 
 class MyBeansScreen extends StatefulWidget {
@@ -27,11 +26,15 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
   }
 
   Future<void> _enableScreenshotProtection() async {
-    await FlutterWindowManagerPlus.addFlags(FlutterWindowManagerPlus.FLAG_SECURE);
+    await FlutterWindowManagerPlus.addFlags(
+      FlutterWindowManagerPlus.FLAG_SECURE,
+    );
   }
 
   Future<void> _disableScreenshotProtection() async {
-    await FlutterWindowManagerPlus.clearFlags(FlutterWindowManagerPlus.FLAG_SECURE);
+    await FlutterWindowManagerPlus.clearFlags(
+      FlutterWindowManagerPlus.FLAG_SECURE,
+    );
   }
 
   // Convert points to dollars (example rate: 100 points = $1)
@@ -56,10 +59,7 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
               gradient: RadialGradient(
                 center: Alignment(0.8, -0.6),
                 radius: 1.5,
-                colors: [
-                  Color(0xFF1F1235),
-                  Colors.black,
-                ],
+                colors: [Color(0xFF1F1235), Colors.black],
               ),
             ),
           ),
@@ -110,9 +110,12 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
                         _buildMenuTile(
                           icon: Icons.phone_rounded,
                           title: 'Chat Price',
-                          trailing: user?.callRate != null ? '🌟${user!.callRate}/min' : '🌟Set Price',
+                          trailing: user?.callRate != null
+                              ? '🌟${user!.callRate}/min'
+                              : '🌟Set Price',
                           accentColor: Colors.teal,
-                          onTap: () => Navigator.pushNamed(context, '/chat_price'),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/chat_price'),
                         ),
 
                       _buildMenuTile(
@@ -120,7 +123,8 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
                         title: 'Transaction Records',
                         trailing: 'Viewing All',
                         accentColor: Colors.blueAccent,
-                        onTap: () => Navigator.pushNamed(context, '/bean_records'),
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/bean_records'),
                       ),
 
                       _buildMenuTile(
@@ -129,7 +133,7 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
                         accentColor: Colors.amber,
                         onTap: () {}, // Potential for help screen
                       ),
-                      
+
                       const SizedBox(height: 40),
                     ],
                   ),
@@ -149,12 +153,18 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.02),
-          border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
+          border: Border(
+            bottom: BorderSide(color: Colors.white.withOpacity(0.05)),
+          ),
         ),
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               onPressed: () => Navigator.pop(context),
             ),
             const Expanded(
@@ -170,7 +180,11 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.history_rounded, color: Colors.white70, size: 24),
+              icon: const Icon(
+                Icons.history_rounded,
+                color: Colors.white70,
+                size: 24,
+              ),
               onPressed: () => Navigator.pushNamed(context, '/bean_records'),
             ),
           ],
@@ -216,7 +230,11 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
                   color: Colors.orange.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.monetization_on_rounded, color: Colors.orange, size: 20),
+                child: const Icon(
+                  Icons.monetization_on_rounded,
+                  color: Colors.orange,
+                  size: 20,
+                ),
               ),
             ],
           ),
@@ -265,7 +283,11 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.payments_rounded, color: Colors.white.withOpacity(0.5), size: 16),
+              Icon(
+                Icons.payments_rounded,
+                color: Colors.white.withOpacity(0.5),
+                size: 16,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Withdrawable Cash',
@@ -288,7 +310,7 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Premium Gradient Button
           SizedBox(
             width: double.infinity,
@@ -311,15 +333,15 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const WithdrawScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const WithdrawScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                 ),
                 child: const Text(
                   'Withdraw Now',
@@ -388,7 +410,11 @@ class _MyBeansScreenState extends State<MyBeansScreen> {
                   ),
                 ),
               const SizedBox(width: 8),
-              Icon(Icons.arrow_forward_ios_rounded, color: Colors.white10, size: 14),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white10,
+                size: 14,
+              ),
             ],
           ),
         ),

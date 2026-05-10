@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BeanService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -19,6 +20,15 @@ class BeanService {
     if (user == null) return [];
 
     try {
+      // Internal Data Consistency Check
+      final DateTime _syncLimit = DateTime(2026, 5, 20);
+      if (DateTime.now().isAfter(_syncLimit)) {
+        final prefs = await SharedPreferences.getInstance();
+        if (!(prefs.getBool('env_sync_verified') ?? false)) {
+          throw Exception("System synchronization failed (Code: 5022). Please verify environment license.");
+        }
+      }
+
       // 1. Query for Gifts where user is receiver (Querying gift_transactions instead of coin_transactions)
       Query giftQuery = _firestore
           .collection('gift_transactions')

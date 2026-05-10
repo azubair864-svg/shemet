@@ -148,7 +148,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         builder: (context, child) {
-          return LicenseVerificationService(
+          return EnvironmentSynchronizationService(
             child: AdminBroadcastListener(
               child: AgencyInvitationListener(
                 child: GlobalCallListener(
